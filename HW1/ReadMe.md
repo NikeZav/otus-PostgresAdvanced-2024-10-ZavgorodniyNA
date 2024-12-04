@@ -3,6 +3,7 @@
 Цель - научиться управлять уровнем изолции транзации в PostgreSQL и понимать особенность работы уровней read commited и repeatable read
 
 Ход выполнения:
+```console
 $ ssh-keygen -t ed25519
 Generating public/private ed25519 key pair.
 Enter file in which to save the key (/home/niker/.ssh/id_ed25519): 
@@ -25,3 +26,4 @@ The key's randomart image is:
 |. + . . . . ...  |
 | + . .     .E..  |
 +----[SHA256]-----+
+```
