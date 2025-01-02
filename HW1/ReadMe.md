@@ -5,7 +5,7 @@
 Ход выполнения:
 
 Для удобства добавляем в конец файла /etc/hosts имя сервера для подключения:
-```console
+```bash
 sudo nano /etc/hosts
 
 ....
@@ -14,7 +14,7 @@ sudo nano /etc/hosts
 
 Генерируем пару ключей
 
-```console
+```bash
 $ ssh-keygen -t ed25519
 Generating public/private ed25519 key pair.
 Enter file in which to save the key (/home/niker/.ssh/id_ed25519): 
@@ -40,7 +40,7 @@ The key's randomart image is:
 ```
 Передаем публичный ключ на сервер
 
-```console
+```bash
 sh-copy-id -i ~/.ssh/id_ed25519.pub debian
 /usr/bin/ssh-copy-id: INFO: Source of key(s) to be installed: "/home/niker/.ssh/id_ed25519.pub"
 The authenticity of host 'debian (192.168.74.131)' can't be established.
@@ -59,7 +59,7 @@ and check to make sure that only the key(s) you wanted were added.
 
 Проверяем доступ по ключу
 
-```console
+```bash
 ssh -i ~/.ssh/id_ed25519 debian 
 Enter passphrase for key '/home/niker/.ssh/id_ed25519': 
 Linux debian12 6.1.0-28-amd64 #1 SMP PREEMPT_DYNAMIC Debian 6.1.119-1 (2024-11-22) x86_64
@@ -75,22 +75,22 @@ Last login: Thu Jan  2 12:44:31 2025 from 192.168.74.133
 
 После успешной проверки отключаем доступ по паролю:
 
-```console
+```bash
 sudo sh -c 'echo "PasswordAuthentication no" >> /etc/ssh/sshd_config'
 ```
 
 Устанавливаем PostgreSQL через пакетный менеджер
-```console
+```bash
 sudo apt install postgresql
 ```
 
 Открываем ещё одну ssh сессию в отдельной вкладке
-```console
+```bash
 ssh debian
 ```
 
 В обоих ssh сессиях подключаемся как пользователь postgres и запускаем psql
-```console 
+```bash 
 sudo su - postgres
 psql
 
@@ -102,14 +102,14 @@ postgres=#
 
 Отключаем автокоммит в обоих сессиях
 
-```postgres
+```pgsql
 postgres=# \set AUTOCOMMIT OFF
 postgres=# \echo :AUTOCOMMIT
 OFF
 ```
 
 Создадим тестовую БД и подключимся (в двух сессиях) к ней 
-```postgres
+```pgsql
 postgres=# CREATE DATABASE hw1;
 CREATE DATABASE
 postgres=# \c hw1
@@ -118,7 +118,7 @@ hw1=#
 ```
 
 Создадим тестовую таблицу и добавим данные 
-```postgres
+```pgsql
 hw1=# create table persons(id serial, first_name text, second_name text);
 insert into persons(first_name, second_name) values('ivan', 'ivanov');
 insert into persons(first_name, second_name) values('petr', 'petrov');
@@ -131,7 +131,7 @@ hw1=#
 ```
 
 Проверим уровень изоляции
-```postgres
+```pgsql
 hw1=# show transaction isolation level;
  transaction_isolation 
 -----------------------
@@ -143,14 +143,14 @@ hw1=#
 ```
 
 В первой сессии добавим новую запись не фиксируя транзакцию
-```postgres
+```pgsql
 hw1=# insert into persons(first_name, second_name) values('sergey', 'sergeev');
 INSERT 0 1
 hw1=*# 
 ```
 
 Во второй сессии сделаем выборку из таблицы persons
-```postgres
+```pgsql
 hw1=#  select * from persons;
  id | first_name | second_name 
 ----+------------+-------------
@@ -162,7 +162,7 @@ hw1=*#
 Во второй сессии нет данных, добавленных в первой сессии, т.к. при уровне изоляции read committed видны только зафиксированные (commit) изменения.
 
 Завершаем транзакцию в первой сессии (commit;) и проверям выборку во второй сессии
-```postgres
+```pgsql
 hw1=#  select * from persons;
  id | first_name | second_name 
 ----+------------+-------------
@@ -177,7 +177,7 @@ hw1=*#
 
 Начнём в сессиях транзакции с уровнем repeatable read.
 
-```postgres
+```pgsql
 set transaction isolation level repeatable read;
 hw1=# set transaction isolation level repeatable read;
 SET
@@ -185,14 +185,14 @@ hw1=*#
 ```
 
 В первой сессии вставляем данные
-```postgres
+```pgsql
 hw1=*# insert into persons(first_name, second_name) values('sveta', 'svetova');
 INSERT 0 1
 hw1=*# 
 ```
 
 Во второй сессии делаем выборку из таблицы
-```postgres
+```pgsql
 hw1=*#  select * from persons;
  id | first_name | second_name 
 ----+------------+-------------
@@ -206,7 +206,7 @@ hw1=*#
 Новые данные не видны, т.к. при уровне транзакции repeatable read, аналогично read commited отсутствует эффект "грязного чтения", до фиксации данные в выборку не попадут.
 
 Завершаем транзакцию в первой сессии и делаем выборку во второй:
-```postgres
+```pgsql
 hw1=*#  select * from persons;
  id | first_name | second_name 
 ----+------------+-------------
