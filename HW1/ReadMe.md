@@ -77,6 +77,7 @@ Last login: Thu Jan  2 12:44:31 2025 from 192.168.74.133
 
 ```bash
 sudo sh -c 'echo "PasswordAuthentication no" >> /etc/ssh/sshd_config'
+sudo systemctl restart sshd
 ```
 
 Устанавливаем PostgreSQL через пакетный менеджер
